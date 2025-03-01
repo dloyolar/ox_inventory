@@ -8,6 +8,40 @@ import ClockIcon from '../utils/icons/ClockIcon';
 import { getItemUrl } from '../../helpers';
 import Divider from '../utils/Divider';
 
+const getRarityColor = (rarity: string) => {
+  switch (rarity) {
+    case 'comune':
+      return '#A6E519';
+    case 'raro':
+      return '#00FFFF';
+    case 'epico':
+      return '#CD00CD';
+    case 'leggendario':
+      return '#FFD700';
+    case 'speciale':
+      return '#FFFFFF';
+    default:
+      return '#000000';
+  }
+};
+
+const getRarityColorBG = (rarity: string) => {
+  switch (rarity) {
+    case 'comune':
+      return '#0080001A';
+    case 'raro':
+      return '#00FFFF1A';
+    case 'epico':
+      return '#8000801A';
+    case 'leggendario':
+      return '#FFD7001A';
+    case 'speciale':
+      return '#DC23671A';
+    default:
+      return '#0000001A';
+  }
+};
+
 const SlotTooltip: React.ForwardRefRenderFunction<
   HTMLDivElement,
   { item: SlotWithItem; inventoryType: Inventory['type']; style: React.CSSProperties }
@@ -29,6 +63,17 @@ const SlotTooltip: React.ForwardRefRenderFunction<
             <p>{item.name}</p>
           </div>
           <Divider />
+          {item.rarity && (
+            <span
+              className="rarity"
+              style={{
+                color: getRarityColor(item.rarity),
+                backgroundColor: getRarityColorBG(item.rarity),
+              }}
+            >
+              {item.rarity || 'Non rilevato'}
+            </span>
+          )}
         </div>
       ) : (
         <div style={{ ...style }} className="tooltip-wrapper" ref={ref}>
@@ -44,6 +89,18 @@ const SlotTooltip: React.ForwardRefRenderFunction<
             )}
           </div>
           <Divider />
+          {item.rarity && (
+            <span
+              className="rarity"
+              style={{
+                color: getRarityColor(item.rarity),
+                backgroundColor: getRarityColorBG(item.rarity),
+              }}
+            >
+              {item.rarity || 'Non rilevato'}
+            </span>
+          )}
+
           {description && (
             <div className="tooltip-description">
               <ReactMarkdown className="tooltip-markdown">{description}</ReactMarkdown>

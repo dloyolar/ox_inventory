@@ -117,6 +117,23 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
     }
   };
 
+  const getRarityColor = (rarity: string) => {
+    switch (rarity) {
+      case 'comune':
+        return '#00800060';
+      case 'raro':
+        return '#00FFFF60';
+      case 'epico':
+        return '#80008060';
+      case 'leggendario':
+        return '#FFD70060';
+      case 'speciale':
+        return '#FFFFFF60';
+      default:
+        return '#00000040';
+    }
+  };
+
   const refs = useMergeRefs([connectRef, ref]);
 
   return (
@@ -125,16 +142,43 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
       onContextMenu={handleContext}
       onClick={handleClick}
       className="inventory-slot"
-      style={{
-        filter:
-          !canPurchaseItem(item, { type: inventoryType, groups: inventoryGroups }) || !canCraftItem(item, inventoryType)
-            ? 'brightness(80%) grayscale(100%)'
-            : undefined,
-        opacity: isDragging ? 0.4 : 1.0,
-        backgroundImage: `url(${item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
-        border: isOver ? '1px dashed rgba(255,255,255,0.4)' : '',
-      }}
+      style={
+        item
+          ? item.rarity === 'speciale'
+            ? {
+                filter:
+                  !canPurchaseItem(item, { type: inventoryType, groups: inventoryGroups }) ||
+                  !canCraftItem(item, inventoryType) ||
+                  item?.durability === 0
+                    ? 'brightness(80%) grayscale(100%)'
+                    : undefined,
+                opacity: isDragging ? 0.4 : 1.0,
+                // backgroundImage: `url(${item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                boxShadow: `inset 0 0 100px .1vh ${getRarityColor(item.rarity || '')}`,
+                border: isOver ? '1px dashed rgba(255,255,255,0.4)' : '',
+                animation:
+                  'prismaticShadow 3s infinite linear, zoomOutAndShake 0.7s cubic-bezier(0.250, 0.460, 0.450, 0.940) both',
+              }
+            : {
+                filter:
+                  !canPurchaseItem(item, { type: inventoryType, groups: inventoryGroups }) ||
+                  !canCraftItem(item, inventoryType) ||
+                  item?.durability === 0
+                    ? 'brightness(80%) grayscale(100%)'
+                    : undefined,
+                opacity: isDragging ? 0.4 : 1.0,
+                // backgroundImage: `url(${item?.name ? getItemUrl(item as SlotWithItem) : 'none'}`,
+                backgroundPosition: 'center',
+                backgroundRepeat: 'no-repeat',
+                boxShadow: `inset 0 0 100px .1vh ${getRarityColor(item.rarity || '')}`,
+                border: isOver ? '1px dashed rgba(255,255,255,0.4)' : '',
+              }
+          : {}
+      }
     >
+      <img className="inventory-slot-bg" src={item?.name ? getItemUrl(item as SlotWithItem) : ''} />
       {isSlotWithItem(item) && (
         <div
           className="item-slot-wrapper"
@@ -151,14 +195,22 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
             }
           }}
         >
-          <div
-            className={
-              inventoryType === 'player' && item.slot <= 5 ? 'item-hotslot-header-wrapper' : 'item-slot-header-wrapper'
-            }
-          >
-            {inventoryType === 'player' && item.slot <= 5 && <div className="inventory-slot-number">{item.slot}</div>}
-            <div className="item-slot-info-wrapper">
-              <p>
+          <div>
+            <div className="inventory-slot-label-box">
+              <div className="inventory-slot-label-text">
+                {item.metadata?.label ? item.metadata.label : Items[item.name]?.label || item.name}
+              </div>
+            </div>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', columnGap: '2px' }}>
+            <div
+              className={
+                inventoryType === 'player' && item.slot <= 5
+                  ? 'item-hotslot-header-wrapper'
+                  : 'item-slot-header-wrapper'
+              }
+            >
+              <div className="inventory-slot-label-weight-text">
                 {item.weight > 0
                   ? item.weight >= 1000
                     ? `${(item.weight / 1000).toLocaleString('en-us', {
@@ -168,53 +220,55 @@ const InventorySlot: React.ForwardRefRenderFunction<HTMLDivElement, SlotProps> =
                         minimumFractionDigits: 0,
                       })}g `
                   : ''}
-              </p>
-              <p>{item.count ? item.count.toLocaleString('en-us') + `x` : ''}</p>
-            </div>
-          </div>
-          <div>
-            {inventoryType !== 'shop' && item?.durability !== undefined && (
-              <WeightBar percent={item.durability} durability />
-            )}
-            {inventoryType === 'shop' && item?.price !== undefined && (
-              <>
-                {item?.currency !== 'money' && item.currency !== 'black_money' && item.price > 0 && item.currency ? (
-                  <div className="item-slot-currency-wrapper">
-                    <img
-                      src={item.currency ? getItemUrl(item.currency) : 'none'}
-                      alt="item-image"
-                      style={{
-                        imageRendering: '-webkit-optimize-contrast',
-                        height: 'auto',
-                        width: '2vh',
-                        backfaceVisibility: 'hidden',
-                        transform: 'translateZ(0)',
-                      }}
-                    />
-                    <p>{item.price.toLocaleString('en-us')}</p>
-                  </div>
-                ) : (
+              </div>
+              <div className="inventory-slot-label-weight-text">
+                {item.count ? item.count.toLocaleString('en-us') + `x` : ''}
+                {inventoryType === 'shop' && item?.price !== undefined && (
                   <>
-                    {item.price > 0 && (
-                      <div
-                        className="item-slot-price-wrapper"
-                        style={{ color: item.currency === 'money' || !item.currency ? '#2ECC71' : '#E74C3C' }}
-                      >
-                        <p>
-                          {Locale.$ || '$'}
-                          {item.price.toLocaleString('en-us')}
-                        </p>
+                    {item?.currency !== 'money' &&
+                    item.currency !== 'black_money' &&
+                    item.price > 0 &&
+                    item.currency ? (
+                      <div className="item-slot-currency-wrapper">
+                        <img
+                          src={item.currency ? getItemUrl(item.currency) : 'none'}
+                          alt="item-image"
+                          style={{
+                            imageRendering: '-webkit-optimize-contrast',
+                            height: 'auto',
+                            width: '2vh',
+                            backfaceVisibility: 'hidden',
+                            transform: 'translateZ(0)',
+                          }}
+                        />
+                        <p>{item.price.toLocaleString('en-us')}</p>
                       </div>
+                    ) : (
+                      <>
+                        {item.price > 0 && (
+                          <div
+                            className="item-slot-price-wrapper"
+                            style={{ color: item.currency === 'money' || !item.currency ? '#2ECC71' : '#E74C3C' }}
+                          >
+                            {/* <p> */}
+                            {Locale.$ || '$'}
+                            {item.price.toLocaleString('en-us')}
+                            {/* </p> */}
+                          </div>
+                        )}
+                      </>
                     )}
                   </>
                 )}
-              </>
-            )}
-            <div className="inventory-slot-label-box">
-              <div className="inventory-slot-label-text">
-                {item.metadata?.label ? item.metadata.label : Items[item.name]?.label || item.name}
               </div>
             </div>
+            {inventoryType !== 'shop' &&
+              item?.durability !== undefined &&
+              !['weapon_hatchet', 'weapon_pickaxe'].some((sub) => item?.name.toLowerCase() == sub) && (
+                <div style={{ paddingTop: '0.5px' }}>
+                  <WeightBar percent={item.durability} durability />
+                </div>
+              )}
           </div>
         </div>
       )}

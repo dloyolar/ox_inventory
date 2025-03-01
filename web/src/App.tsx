@@ -11,6 +11,7 @@ import DragPreview from './components/utils/DragPreview';
 import { fetchNui } from './utils/fetchNui';
 import { useDragDropManager } from 'react-dnd';
 import KeyPress from './components/utils/KeyPress';
+import { setDamage } from './store/damage';
 
 debugData([
   {
@@ -19,51 +20,65 @@ debugData([
       leftInventory: {
         id: 'test',
         type: 'player',
-        slots: 50,
-        label: 'Bob Smith',
+        slots: 20,
+        label: 'LucaFlash',
         weight: 3000,
         maxWeight: 5000,
         items: [
           {
             slot: 1,
-            name: 'iron',
+            name: 'Iron',
             weight: 3000,
-            metadata: {
-              description: `name: Svetozar Miletic  \n Gender: Male`,
-              ammo: 3,
-              mustard: '60%',
-              ketchup: '30%',
-              mayo: '10%',
-            },
-            count: 5,
+            rarity: 'comune',
+            count: 15,
           },
-          { slot: 2, name: 'powersaw', weight: 0, count: 1, metadata: { durability: 75 } },
-          { slot: 3, name: 'copper', weight: 100, count: 12, metadata: { type: 'Special' } },
+          {
+            slot: 2,
+            name: 'water',
+            rarity: 'raro',
+            weight: 100,
+            count: 1,
+            metadata: { description: 'Generic item description' },
+          },
+          {
+            slot: 3,
+            name: 'water',
+            rarity: 'epico',
+            weight: 100,
+            count: 1,
+            metadata: { description: 'Generic item description' },
+          },
           {
             slot: 4,
+            name: 'water',
+            rarity: 'leggendario',
+            weight: 100,
+            count: 1,
+            metadata: { description: 'Generic item description' },
+          },
+          {
+            slot: 5,
+            name: 'water',
+            rarity: 'speciale',
+            weight: 100,
+            count: 1,
+            metadata: { description: 'Generic item description' },
+          },
+          {
+            slot: 6,
             name: 'water',
             weight: 100,
             count: 1,
             metadata: { description: 'Generic item description' },
           },
-          { slot: 5, name: 'water', weight: 100, count: 1 },
-          {
-            slot: 6,
-            name: 'backwoods',
-            weight: 100,
-            count: 1,
-            metadata: {
-              label: 'Russian Cream',
-              imageurl: 'https://i.imgur.com/2xHhTTz.png',
-            },
-          },
+          
         ],
       },
       rightInventory: {
         id: 'shop',
-        type: 'crafting',
-        slots: 5000,
-        label: 'Bob Smith',
+        type: 'shop',
+        slots: 20,
+        label: 'Shop',
         weight: 3000,
         maxWeight: 5000,
         items: [
@@ -110,6 +125,10 @@ const App: React.FC = () => {
     manager.dispatch({ type: 'dnd-core/END_DRAG' });
   });
 
+  useNuiEvent('DamageCall', (data: any) => {
+    dispatch(setDamage(data));
+  });
+
   return (
     <div className="app-wrapper">
       <InventoryComponent />
@@ -119,8 +138,8 @@ const App: React.FC = () => {
   );
 };
 
-addEventListener("dragstart", function(event) {
-  event.preventDefault()
-})
+addEventListener('dragstart', function (event) {
+  event.preventDefault();
+});
 
 export default App;
